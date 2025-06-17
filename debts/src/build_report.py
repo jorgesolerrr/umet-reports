@@ -2,7 +2,7 @@ import json
 import pandas as pd
 from datetime import datetime
 
-PATH_DATA = "data/16-6-25-pm.json"
+PATH_DATA = "data/17-6-25_1035.json"
 
 def get_data():
     with open(PATH_DATA, "r") as file:
@@ -11,7 +11,7 @@ def get_data():
 
 
 def export_data(df):
-    df.to_excel(f"debts/reports/deudas-{datetime.now().strftime('%d-%m-%Y')}.xlsx", index=False)
+    df.to_excel(f"debts/reports/deudas-{datetime.now().strftime('%d-%m-%Y_%H%M')}.xlsx", index=False)
 
 def build_report(data):
     df = pd.DataFrame(data)

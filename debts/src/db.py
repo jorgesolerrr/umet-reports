@@ -2,6 +2,7 @@ import logging
 from typing import Generator
 from mysql.connector import connect, MySQLConnection
 from mysql.connector.cursor import MySQLCursor
+from mysql.connector.errors import DatabaseError
 from .settings import settings
 from .schemas import MoodleConn
 from src.logging.logger_factory import get_logger
@@ -10,7 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, before_log, after_lo
 logger = get_logger()
 
 MAX_ATTEMPTS = 3
-WAIT_TIME = 3
+WAIT_TIME = 1
 
 
 @retry(
@@ -90,8 +91,8 @@ def get_suspended_users(db: MySQLConnection, lmsName: str) -> set[str]:
     except Exception as e:
         logger.error(f"Error al obtener usuarios suspendidos: {e}")
         raise e
-    
 def post_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
+    
     try:
         
         with db.cursor() as cursor:
@@ -99,6 +100,11 @@ def post_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
             cursor.execute(tempSQL, (user["programa"], user["cedula"], user["descrip"], lmsName))
             db.commit()
             logger.info(f"Se suspendió el usuario {user['cedula']}")
+            
+    except DatabaseError as e:
+        logger.error(f"Error al insertar usuarios suspendidos: {e}")
+        db.rollback()
+        raise e
     except Exception as e:
         logger.error(f"Error al insertar usuarios suspendidos: {e}")
         raise e
