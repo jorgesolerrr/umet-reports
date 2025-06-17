@@ -1,0 +1,86 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.utils import COMMASPACE, formatdate
+import smtplib
+import jinja2
+from src.settings import settings
+from src.logging.logger_factory import get_logger
+
+logger = get_logger()
+
+# ! internal use
+def send_mail(smtp_server, smtp_port, smtp_user, smtp_password, send_to, subject, template_name, params, files=[]):
+    templatePath = settings.TEMPLATES_PATH
+    try:
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(templatePath))
+    except Exception as e:
+        logger.error(f"Error (jinja2.Environment) ---> {str(e)}")
+        raise e
+
+    try: 
+        with smtplib.SMTP(smtp_server, smtp_port) as smtp:
+            msg = MIMEMultipart('alternative')
+            msg['From'] = smtp_user
+            msg['To'] = COMMASPACE.join(send_to)
+            msg['Date'] = formatdate(localtime=True)
+            msg['Subject'] = subject
+            template = env.get_template(template_name)
+            msg.attach(MIMEText(template.render(params), 'html')) 
+            for file in files:
+                part = MIMEBase('application', "octet-stream")
+                part.set_payload(file['file'])
+                part.add_header('Content-Transfer-Encoding', 'base64')
+            #    part['Content-Disposition'] = 'attachment; filename="%s"' % file['name']
+                msg.attach(part)
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login(smtp_user, smtp_password)
+            smtp.sendmail(smtp_user, send_to, msg.as_string())
+            smtp.quit()
+    except Exception as e:
+        logger.error(f"Error (smtplib.SMTP) ---> {str(e)}")     
+        raise e
+
+
+# in external use at least once (gatewayDB.py)         
+def send_userNotification(notificationType: str, user: dict): #(user: dict of SNAUser object + userName + userEmail)
+        
+    templateDict = {
+        getenv('SUSPENDED_NOTIFICATION'): "suspended_user.html",
+        getenv('ACTIVATED_NOTIFICATION'): "activated_user.html",
+        getenv('DEBT_NOTIFICATION'): "debt_status_mssg.html"
+    }
+    template_str = templateDict[notificationType]
+    
+    subjectDict = {
+        getenv('SUSPENDED_NOTIFICATION'): f"Notificación: Suspensión temporal de acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
+        getenv('ACTIVATED_NOTIFICATION'): f"Notificación: Activación del acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
+        getenv('DEBT_NOTIFICATION'): "Notificación: Estado de valores pendientes.",
+        getenv('RECOVERY_NOTIFICATION'): f"Notificación: Solicitud de reinicio de contraseña en la plataforma: {user['lmsName']}.",
+        getenv('RECOVERY_CONFIRMATION'): f"Contraseña actualizada con éxito en la plataforma: {user['lmsName']}"
+    }        
+    mssg_subject = subjectDict[notificationType]       
+      
+    params = {}
+    params['userName'] = user['userName']     
+    if (notificationType == "DEBT_NOTIFICATION"):
+        params['userDebt'] = user['userDebt']      
+    elif (notificationType == "RECOVERY_NOTIFICATION"):
+        params['app_name'] = user['lmsName']    
+        params['token'] = user['token']  
+        #params['web_url'] = user['recoveryCall']    
+    elif (notificationType == "RECOVERY_CONFIRMATION"):  
+        params['app_name'] = user['lmsName']   
+        params['password'] = user['restart_password']
+                  
+    send_mail(
+        getenv('SMTP_SERVER'),
+        getenv('SMTP_PORT'),
+        getenv('SMTP_USER'),
+        getenv('SMTP_PASSWORD'),
+        [user["userEmail"]],
+        mssg_subject,
+        template_str,
+        params)
+        
