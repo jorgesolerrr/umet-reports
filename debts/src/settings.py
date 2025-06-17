@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/app.log"
     INTERCEPT_MODULES: list[str] = ["mysql.connector"]
+    SUSPENDED_NOTIFICATION: str
+    ACTIVATED_NOTIFICATION: str
+    DEBT_NOTIFICATION: str
+    SMTP_SERVER: str
+    SMTP_PORT: str
+    SMTP_USER: str
+    SMTP_PASSWORD: str
     
     class Config:
         env_file = ".env"
