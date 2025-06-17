@@ -47,18 +47,18 @@ def send_mail(smtp_server, smtp_port, smtp_user, smtp_password, send_to, subject
 def send_userNotification(notificationType: str, user: dict): #(user: dict of SNAUser object + userName + userEmail)
         
     templateDict = {
-        getenv('SUSPENDED_NOTIFICATION'): "suspended_user.html",
-        getenv('ACTIVATED_NOTIFICATION'): "activated_user.html",
-        getenv('DEBT_NOTIFICATION'): "debt_status_mssg.html"
+        settings.SUSPENDED_NOTIFICATION: "suspended_user.html",
+        settings.ACTIVATED_NOTIFICATION: "activated_user.html",
+        settings.DEBT_NOTIFICATION: "debt_status_mssg.html"
     }
     template_str = templateDict[notificationType]
     
     subjectDict = {
-        getenv('SUSPENDED_NOTIFICATION'): f"Notificación: Suspensión temporal de acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
-        getenv('ACTIVATED_NOTIFICATION'): f"Notificación: Activación del acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
-        getenv('DEBT_NOTIFICATION'): "Notificación: Estado de valores pendientes.",
-        getenv('RECOVERY_NOTIFICATION'): f"Notificación: Solicitud de reinicio de contraseña en la plataforma: {user['lmsName']}.",
-        getenv('RECOVERY_CONFIRMATION'): f"Contraseña actualizada con éxito en la plataforma: {user['lmsName']}"
+        settings.SUSPENDED_NOTIFICATION: f"Notificación: Suspensión temporal de acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
+        settings.ACTIVATED_NOTIFICATION: f"Notificación: Activación del acceso a la plataforma de enseñanza virtual ({user['lmsName']}).",
+        settings.DEBT_NOTIFICATION: "Notificación: Estado de valores pendientes.",
+        settings.RECOVERY_NOTIFICATION: f"Notificación: Solicitud de reinicio de contraseña en la plataforma: {user['lmsName']}.",
+        settings.RECOVERY_CONFIRMATION: f"Contraseña actualizada con éxito en la plataforma: {user['lmsName']}"
     }        
     mssg_subject = subjectDict[notificationType]       
       
@@ -75,10 +75,10 @@ def send_userNotification(notificationType: str, user: dict): #(user: dict of SN
         params['password'] = user['restart_password']
                   
     send_mail(
-        getenv('SMTP_SERVER'),
-        getenv('SMTP_PORT'),
-        getenv('SMTP_USER'),
-        getenv('SMTP_PASSWORD'),
+        settings.SMTP_SERVER,
+        settings.SMTP_PORT,
+        settings.SMTP_USER,
+        settings.SMTP_PASSWORD,
         [user["userEmail"]],
         mssg_subject,
         template_str,

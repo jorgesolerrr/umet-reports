@@ -7,3 +7,9 @@ class MoodleConn(BaseModel):
     db_password: str
     db_name: str
     db_programs: str
+    
+class UserMoodle(BaseModel):    
+    userid : str
+    firstname : str
+    lastname : str
+    email : str
