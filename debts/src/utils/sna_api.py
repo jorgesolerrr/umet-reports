@@ -3,7 +3,6 @@ from src.logging.logger_factory import get_logger
 from .suspended_data import (
     test_shortSNAZeroResponse,
     test_shortSNAFullResponse,
-    test_SNAFullResponse,
 )
 
 ENV = "PRODUCTION"
@@ -76,9 +75,6 @@ def call_sna_api_deudas():
             debt_users = response["data"]
         case "DEV_SHORT_RESPONSE":
             response = test_shortSNAFullResponse
-            debt_users = response["data"]
-        case "DEV_FULL_RESPONSE":
-            response = test_SNAFullResponse
             debt_users = response["data"]
         case _:
             logger.error(f"Environment {ENV} not supported")

@@ -37,8 +37,7 @@ def get_db() -> Generator[MySQLConnection, None, None]:
         raise e
 
 def parse_url(url: str) -> str:
-    urlStr = url.split("/")
-    return "/".join(urlStr[:3])
+    return url.split("/")[2]
 
 def get_available_lms(gwDBCursor: MySQLConnection) -> list[MoodleConn]:
     # sourcery skip: extract-method
@@ -46,12 +45,13 @@ def get_available_lms(gwDBCursor: MySQLConnection) -> list[MoodleConn]:
         with gwDBCursor.cursor() as cursor:
             tempSQL = """
                         select 
-                            lms.id, 
+                            lms.id,
                             lms.url_moodle_service, 
                             lms.dbname, 
                             lms.dbuser, 
                             lms.dbpass, 
-                            lms.dbprograms 
+                            lms.dbprograms,
+                            lms.lmsName
                         from tbLMS AS lms 
                         where (lms.enabled = 1)"""
             logger.info("Ejecutando consulta para obtener LMS disponibles")
@@ -66,6 +66,7 @@ def get_available_lms(gwDBCursor: MySQLConnection) -> list[MoodleConn]:
                 db_user=result[3],
                 db_password=result[4],
                 db_programs=result[5],
+                lms_name=result[6]
             ) for result in result]
 
     except Exception as e:
@@ -86,10 +87,10 @@ def get_suspended_users(db: MySQLConnection, lmsName: str) -> set[str]:
             tempSQL = "select susp.cedula from tbSuspended AS susp where (susp.lmsname = %s)"
             cursor.execute(tempSQL, [lmsName])
             result = cursor.fetchall()
-            logger.info(f"Se han obtenido {len(result)} usuarios suspendidos")
+            logger.info(f"Se han obtenido {len(result)} usuarios suspendidos en {lmsName}")
             return {muser[0] for muser in result}
     except Exception as e:
-        logger.error(f"Error al obtener usuarios suspendidos: {e}")
+        logger.error(f"Error al obtener usuarios suspendidos: {e} en {lmsName}")
         raise e
 def post_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
     
@@ -97,16 +98,16 @@ def post_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
         
         with db.cursor() as cursor:
             tempSQL = "insert into tbSuspended (programa, cedula, descrip, lmsname) values(%s, %s, %s, %s)"
-            cursor.execute(tempSQL, (user["programa"], user["cedula"], user["descrip"], lmsName))
+            cursor.execute(tempSQL, (user["programa"], user["cedula"], f"{user['deuda1']},{user['deuda2']}", lmsName))
             db.commit()
-            logger.info(f"Se suspendió el usuario {user['cedula']}")
+            logger.info(f"Se suspendió el usuario {user['cedula']} en {lmsName}")
             
     except DatabaseError as e:
-        logger.error(f"Error al insertar usuarios suspendidos: {e}")
+        logger.error(f"Error al insertar usuarios suspendidos: {e} en {lmsName}")
         db.rollback()
         raise e
     except Exception as e:
-        logger.error(f"Error al insertar usuarios suspendidos: {e}")
+        logger.error(f"Error al insertar usuarios suspendidos: {e} en {lmsName}")
         raise e
 
 def delete_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
@@ -115,7 +116,7 @@ def delete_suspended_user(db: MySQLConnection, lmsName: str, user: dict):
             tempSQL = "delete from tbSuspended where (cedula = %s) and (lmsname = %s)"
             cursor.execute(tempSQL, (user["cedula"], lmsName))
             db.commit()
-            logger.info(f"Se ha activado el usuario {user['cedula']}")
+            logger.info(f"Se ha activado el usuario {user['cedula']} en {lmsName}")
     except Exception as e:
-        logger.error(f"Error al eliminar usuarios suspendidos: {e}")
+        logger.error(f"Error al eliminar usuarios suspendidos: {e} en {lmsName}")
         raise e

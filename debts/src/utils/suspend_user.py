@@ -8,7 +8,7 @@ from src.settings import settings
 
 logger = get_logger()
 
-ENV = "DESARROLLO"
+ENV = "PRODUCCION"
 
 def suspend_user(lmsName: str, user: dict, moodleConn: MySQLConnection, gwDB: MySQLConnection):
     # 1 -> Registrar en tbSuspended
@@ -17,7 +17,8 @@ def suspend_user(lmsName: str, user: dict, moodleConn: MySQLConnection, gwDB: My
 
     # 2 -> Modificar en moodle el estado de suspended a 1
     userMoodle = path_moodle_user(moodleConn, cedula=user["cedula"], suspended=True)
-    logger.info(f"Usuario {user['cedula']} suspendido en Moodle")
+    if userMoodle is None:
+        raise ValueError(f"Error al suspender usuario {user['cedula']} en Moodle")
 
     user |= {
         "userName": f"{userMoodle.firstname} {userMoodle.lastname}",

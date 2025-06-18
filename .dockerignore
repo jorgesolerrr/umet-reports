@@ -1,0 +1,47 @@
+# Archivos de git
+.git
+.gitignore
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Archivos de logs
+logs/
+*.log
+
+# Reportes generados
+debts/reports/*.xlsx
+
+# Datos temporales
+data/
+
+# Archivos de configuración local
+.env
+.env.local
+.env.*.local
+
+# Archivos de Docker
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+
+# Archivos de documentación
+README.md
+LICENSE
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db 

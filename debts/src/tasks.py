@@ -1,13 +1,14 @@
 from mysql.connector import MySQLConnection
-from debts.src.db import get_suspended_users, get_db
-from debts.src.schemas import MoodleConn
-from debts.src.utils.suspend_user import activate_user, suspend_user
+from src.db import get_suspended_users, get_db
+from src.schemas import MoodleConn
+from src.utils.suspend_user import activate_user, suspend_user
 from src.logging.logger_factory import get_logger
+import time
 
 logger = get_logger()
 
 def disable_users(
-    moodleConn : MoodleConn,
+    moodleConn : MySQLConnection,
     db: MySQLConnection,
     lmsName: str,
     SNA_userList_set: set, 
@@ -28,6 +29,7 @@ def disable_users(
         for user in morosos_list:
             try: 
                 suspend_user(lmsName, user, moodleConn, db)
+                time.sleep(1)
             except Exception as e:
                 logger.error(f"Error al suspender usuario {user['cedula']}: {e}")
                 continue
@@ -38,7 +40,7 @@ def disable_users(
 
 
 def enable_users(
-    moodleConn : MoodleConn,
+    moodleConn : MySQLConnection,
     db: MySQLConnection,
     lmsName: str,
     SNA_userList_set: set, 
@@ -48,7 +50,7 @@ def enable_users(
         tbSuspended_set = get_suspended_users(db, lmsName)
         
         activos_set = tbSuspended_set - SNA_userList_set
-        activos_list = [user for user in SNA_userListProg if user["cedula"] in activos_set]
+        activos_list = [{"cedula": cedula} for cedula in activos_set]
         
         if not activos_list:
             logger.info("Ya todos los estudiantes con deuda tienen su cuenta activada")
@@ -57,6 +59,7 @@ def enable_users(
         for user in activos_list:
             try:
                 activate_user(lmsName, user, moodleConn, db)
+                time.sleep(1)
             except Exception as e:
                 logger.error(f"Error al activar usuario {user['cedula']}: {e}")
                 continue

@@ -183,6 +183,8 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+debts/reports
+
 # PyPI configuration file
 .pypirc
 

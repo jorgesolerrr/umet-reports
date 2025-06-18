@@ -44,8 +44,14 @@ def path_moodle_user(moodle_conn: MySQLConnection, cedula: str, suspended: bool)
             tempSQL = "update mdl_user set mdl_user.suspended = %s where mdl_user.username = %s"  
             cursor.execute(tempSQL, [suspended, cedula])
             moodle_conn.commit()
-            logger.info(f"Se ha actualizado el usuario {cedula} en Moodle a suspended = {suspended}")
-        return get_moodleDBUser(moodle_conn, cedula)
+        user = get_moodleDBUser(moodle_conn, cedula)
+        if user is None:
+            logger.error(f"Usuario {cedula} no encontrado en Moodle")
+            return None
+        
+        logger.info(f"Se ha actualizado el usuario {cedula} en Moodle a suspended = {suspended}")
+        return user
+        
     except Exception as e:
         logger.error(f"Error al actualizar el usuario {cedula} en Moodle: {e}")
         raise e

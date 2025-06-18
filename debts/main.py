@@ -1,42 +1,95 @@
-from debts.src.tasks import disable_users, enable_users
+import schedule
+import time
+import signal
+import sys
+from src.utils.mailer import send_userNotification
+from src.tasks import disable_users, enable_users
 from src.logging.logger_factory import setup_logging, get_logger
 from src.db import get_db, get_available_lms
 from src.moodle_db import get_moodle_db
 from src.utils.sna_api import call_sna_api_deudas, _filter_response
+from src.build_report import build_report
+from src.settings import settings
 
 logger = get_logger()
+
+USER = {
+    "userName": "Jorge Soler",
+    "userEmail": "jsoler@umet.edu.ec",
+    "lmsName": "UMET",
+}
+
 
 def DebtsSentinel():
     db = next(get_db())
     available_lms = get_available_lms(db)
     debt_users = call_sna_api_deudas()
+    report = build_report(debt_users)
+    send_userNotification(settings.REPORT_NOTIFICATION, USER, [report])
+    logger.info("Reporte enviado")
     for lms in available_lms:
-        SNA_userList_set, SNA_userListProg = _filter_response(debt_users, lms.db_programs.split(","))
+        SNA_userList_set, SNA_userListProg = _filter_response(
+            debt_users, lms.db_programs.split(",")
+        )
         try:
-            moodleConn = get_moodle_db(lms)
+            moodleConn = next(get_moodle_db(lms))
         except Exception as e:
             logger.error(f"Error al obtener conexión a Moodle: {e}")
             continue
-        
+
         try:
-            disable_users(moodleConn, db, lms.lms_name, SNA_userList_set, SNA_userListProg)
+            disable_users(
+                moodleConn, db, lms.lms_name, SNA_userList_set, SNA_userListProg
+            )
         except Exception as e:
             logger.error(f"Error al habilitar usuarios: {e}")
             continue
         try:
-            enable_users(moodleConn, db, lms.lms_name, SNA_userList_set, SNA_userListProg)
+            enable_users(
+                moodleConn, db, lms.lms_name, SNA_userList_set, SNA_userListProg
+            )
         except Exception as e:
             logger.error(f"Error al deshabilitar usuarios: {e}")
             continue
-        
-        
-    
+
+
+def signal_handler(sig, frame):
+    """Maneja la señal de interrupción para terminar el programa limpiamente"""
+    logger.info("Recibida señal de interrupción. Terminando programa...")
+    sys.exit(0)
+
+
+def run_sentinel():
+    """Wrapper para ejecutar DebtsSentinel con manejo de excepciones"""
+    try:
+        logger.info("Iniciando ejecución del Sentinel de Deudas...")
+        DebtsSentinel()
+        logger.info("Ejecución del Sentinel de Deudas completada exitosamente")
+    except Exception as e:
+        logger.error(f"Error durante la ejecución del Sentinel de Deudas: {e}")
+
 
 def main():
     setup_logging()
-    debt_users = call_sna_api_deudas(["GRADO", "UAFTT"])
-    print(debt_users)
-    
+    logger.info("Iniciando servicio de monitoreo de deudas...")
+
+    # Configurar manejo de señales para terminar limpiamente
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    # Programar la tarea para que se ejecute cada 60 minutos
+    schedule.every(settings.MINUTES_TO_RUN).minutes.do(run_sentinel)
+
+    # Ejecutar inmediatamente al inicio
+    logger.info("Ejecutando primera verificación...")
+    run_sentinel()
+
+    # Loop principal para mantener el programa corriendo
+    logger.info(f"Servicio iniciado. Próxima ejecución en {settings.MINUTES_TO_RUN} minutos...")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
 
 if __name__ == "__main__":
     main()

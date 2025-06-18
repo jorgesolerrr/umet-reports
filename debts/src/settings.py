@@ -20,9 +20,12 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_PASSWORD: str
     SMTP_TLS: bool = True
-    TEMPLATES_PATH: str = "debts/templates/email_template.html"
+    TEMPLATES_PATH: str = "debts/templates"
     APP_FERMET_KEY: str
     ENCODING_STRING: str
+    APP_SECRET: str
+    REPORT_NOTIFICATION: str
+    MINUTES_TO_RUN: int = 60
     
     class Config:
         env_file = ".env"
