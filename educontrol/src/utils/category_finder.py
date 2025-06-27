@@ -17,7 +17,7 @@ class GradeCategoryBuilder(CategoryBuilder):
             "TIPO APROBACION" : course_data["Categoria_5"]
         }
 
-
+    
 class PostCategoryBuilder(CategoryBuilder):
     def build_categories(self, course_data: dict) -> dict:
         return {
