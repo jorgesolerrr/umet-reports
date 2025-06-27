@@ -1,56 +1,66 @@
 version: '3.8'
 
 services:
-  umet-reports:
-    image: jjsoler/debts-sentinel:v1
-    container_name: umet-reports-app
-    restart: unless-stopped
+  # umet-reports:
+  #   image: jjsoler/debts-sentinel:v1
+  #   container_name: umet-reports-app
+  #   restart: unless-stopped
 
-    environment:
-      # Base de datos DataSol
-      - DB_DATOSOL_USER=${DB_DATOSOL_USER}
-      - DB_DATOSOL_PASSWORD=${DB_DATOSOL_PASSWORD}
-      - DB_DATOSOL_SERVER=${DB_DATOSOL_SERVER}
-      - DB_DATOSOL_PORT=${DB_DATOSOL_PORT}
-      - DB_DATOSOL_NAME=${DB_DATOSOL_NAME}
+  #   environment:
+  #     # Base de datos DataSol
+  #     - DB_DATOSOL_USER=${DB_DATOSOL_USER}
+  #     - DB_DATOSOL_PASSWORD=${DB_DATOSOL_PASSWORD}
+  #     - DB_DATOSOL_SERVER=${DB_DATOSOL_SERVER}
+  #     - DB_DATOSOL_PORT=${DB_DATOSOL_PORT}
+  #     - DB_DATOSOL_NAME=${DB_DATOSOL_NAME}
       
-      # Configuración de logging
-      - LOG_TO_CONSOLE=${LOG_TO_CONSOLE:-true}
-      - LOG_TO_FILE=${LOG_TO_FILE:-true}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - LOG_FILE=${LOG_FILE:-logs/app.log}
+  #     # Configuración de logging
+  #     - LOG_TO_CONSOLE=${LOG_TO_CONSOLE:-true}
+  #     - LOG_TO_FILE=${LOG_TO_FILE:-true}
+  #     - LOG_LEVEL=${LOG_LEVEL:-INFO}
+  #     - LOG_FILE=${LOG_FILE:-logs/app.log}
       
-      # Notificaciones
-      - SUSPENDED_NOTIFICATION=${SUSPENDED_NOTIFICATION}
-      - ACTIVATED_NOTIFICATION=${ACTIVATED_NOTIFICATION}
-      - DEBT_NOTIFICATION=${DEBT_NOTIFICATION}
-      - REPORT_NOTIFICATION=${REPORT_NOTIFICATION}
+  #     # Notificaciones
+  #     - SUSPENDED_NOTIFICATION=${SUSPENDED_NOTIFICATION}
+  #     - ACTIVATED_NOTIFICATION=${ACTIVATED_NOTIFICATION}
+  #     - DEBT_NOTIFICATION=${DEBT_NOTIFICATION}
+  #     - REPORT_NOTIFICATION=${REPORT_NOTIFICATION}
       
-      # Configuración SMTP
-      - SMTP_SERVER=${SMTP_SERVER}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_TLS=${SMTP_TLS:-true}
+  #     # Configuración SMTP
+  #     - SMTP_SERVER=${SMTP_SERVER}
+  #     - SMTP_PORT=${SMTP_PORT}
+  #     - SMTP_USER=${SMTP_USER}
+  #     - SMTP_PASSWORD=${SMTP_PASSWORD}
+  #     - SMTP_TLS=${SMTP_TLS:-true}
       
-      # Configuración de la aplicación
-      - TEMPLATES_PATH=${TEMPLATES_PATH}
-      - APP_FERMET_KEY=${APP_FERMET_KEY}
-      - ENCODING_STRING=${ENCODING_STRING}
-      - APP_SECRET=${APP_SECRET}
-      - MINUTES_TO_RUN=${MINUTES_TO_RUN}
+  #     # Configuración de la aplicación
+  #     - TEMPLATES_PATH=${TEMPLATES_PATH}
+  #     - APP_FERMET_KEY=${APP_FERMET_KEY}
+  #     - ENCODING_STRING=${ENCODING_STRING}
+  #     - APP_SECRET=${APP_SECRET}
+  #     - MINUTES_TO_RUN=${MINUTES_TO_RUN}
     
-    volumes:
-      # Montar directorio de logs
-      - ./logs:/src/logs
-      # Montar directorio de reportes
-      - ./debts/reports:/src/debts/reports
-      # Montar directorio de datos
-      - ./data:/src/data
+  #   volumes:
+  #     # Montar directorio de logs
+  #     - ./logs:/src/logs
+  #     # Montar directorio de reportes
+  #     - ./debts/reports:/src/debts/reports
+  #     # Montar directorio de datos
+  #     - ./data:/src/data
     
-    env_file:
-      - .env
+  #   env_file:
+  #     - .env
     
+  #   networks:
+  #     - umet-network
+
+  redis:
+    image: redis:latest
+    command: ["redis-server", "--requirepass", "redisEduControl*2025"]
+    container_name: redis-educontrol
+    restart: unless-stopped
+    ports:
+      - 6379:6379
     networks:
       - umet-network
 

@@ -54,10 +54,18 @@ class RedisClient:
         
     def get_hset(self, key: str) -> dict:
         try:
-            return self.client.hgetall(key)
+            return self.parse_hset(self.client.hgetall(key))
         except Exception as e:
             logger.error(f"Error al obtener datos de Redis: {e}")
             raise e
+        
+    def parse_hset(self, data: dict) -> dict:
+        for key, value in data.items():
+            try:
+                data[key] = json.loads(value) if isinstance(value, str) else value
+            except Exception as e:
+                data[key] = value
+        return data
         
     def delete_hset(self, key: str):
         try:
