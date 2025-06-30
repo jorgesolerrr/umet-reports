@@ -17,7 +17,8 @@ class RedisClient:
             host=settings.REDIS_HOST,
             port=settings.REDIS_PORT,
             db=settings.REDIS_DB,
-            password=settings.REDIS_PASSWORD
+            password=settings.REDIS_PASSWORD,
+            decode_responses=True
         )
         self._check_connection()
     
