@@ -5,6 +5,7 @@ from src.utils.logging.logger_factory import get_logger
 import logging
 from typing import Generator
 from mysql.connector import MySQLConnection, connect
+import json
 
 logger = get_logger()
 
@@ -48,7 +49,10 @@ def get_available_api_lms(gwDBCursor: MySQLConnection) -> list[MoodleAPIConn]:
                             lms.id,
                             lms.url_moodle_service, 
                             lms.token_moodle, 
-                            lms.active_period
+                            lms.active_period,
+                            lms.report_params,
+                            lms.current_cort,
+                            lms.lmsName
                         from tbLMS AS lms 
                         where (lms.enabled = 1)
                         and (lms.active_period is not null)"""
@@ -58,7 +62,14 @@ def get_available_api_lms(gwDBCursor: MySQLConnection) -> list[MoodleAPIConn]:
             logger.info(f"Se han obtenido {len(result)} LMS disponibles")
 
             return [
-                MoodleAPIConn(url=row[1], token=row[2], periods=row[3].split(","))
+                MoodleAPIConn(
+                    url=row[1],
+                    token=row[2],
+                    periods=row[3].split(","),
+                    report_params= json.loads(row[4]),
+                    current_cort=row[5],
+                    lmsName=row[6],
+                )
                 for row in result
             ]
 

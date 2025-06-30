@@ -26,6 +26,7 @@ MODULE_TYPES = {
     "mindmap" : "mapaMental",
     "label" : "label",
     "videotime" : "video",
+    "pdfannotator" : "archivos"
 }
 
 ACTIVITY_TYPES = [
@@ -51,7 +52,7 @@ def build_initial_data(course_info: dict, course_name: str, ofg_pos: int):
         "Total_Docentes": len(course_info["teachers"]),
         "Docentes": (
             ",".join(
-                [teacher["fullname"] for teacher in course_info["teachers"]]
+                [f"{teacher['fullname']}:{teacher['username']}" for teacher in course_info["teachers"]]
             )
             if len(course_info["teachers"]) > 0
             else "-"
@@ -127,7 +128,7 @@ def build_module_report(module_info: dict, course_data : dict, section_index: in
         if activity_end_date > datetime.date.today():
             course_data[f"S{section_index}_actividades_abiertas"] += 1
             course_data["T_actividades_abiertas"] += 1
-        return
+            return
 
     if module_info["moduleType"] == "url" and len(module_info["contents"]) > 0:
         fileurl = module_info["contents"][0]["cont_fileurl"]
@@ -147,6 +148,8 @@ def build_module_report(module_info: dict, course_data : dict, section_index: in
         return
 
     if module_info["moduleType"] == "resource":
+        course_data[f"S{section_index}_archivos"] += len(module_info["contents"])
+        course_data["T_archivos"] += len(module_info["contents"])
         name = module_info["moduleName"]
         if ("Syllabus de la Asignatura" in name or "PEA" in name) and len(module_info["contents"]) > 0:
             course_data["Existe_PEA"] = 1
