@@ -2,6 +2,7 @@ from src.utils.moodle_client import MoodleClient
 from src.utils.logging.logger_factory import get_logger
 
 fields = [
+    "id",
     "shortname",
     "startDate",
     "endDate",
@@ -13,7 +14,7 @@ fields = [
 ]
 
 URL = ["url"]
-RESOURCES = ["resource", "folder"]
+RESOURCES = ["url", "resource", "folder"]
 
 logger = get_logger()
 
