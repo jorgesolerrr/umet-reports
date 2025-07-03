@@ -13,11 +13,43 @@ from src.settings import settings
 
 logger = get_logger()
 
-USER = {
-    "userName": "Jorge Soler",
-    "userEmail": "jsoler@umet.edu.ec",
-    "lmsName": "UMET",
-}
+USERS = [
+    {
+        "userName": "Jorge Soler",
+        "userEmail": "jsoler@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "Dirección General",
+        "userEmail": "direcciongeneral@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "Contador General",
+        "userEmail": "contadorgeneral@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "Orientador 3Gye",
+        "userEmail": "orientador3gye@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "Orientación Universitaria",
+        "userEmail": "orientacionuniversitaria@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "llondono",
+        "userEmail": "llondono@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
+        "userName": "Guayaquil",
+        "userEmail": "guaygua@umet.edu.ec",
+        "lmsName": "UMET",
+    }
+]
 
 
 def DebtsSentinel():
@@ -25,8 +57,9 @@ def DebtsSentinel():
     available_lms = get_available_lms(db)
     debt_users = call_sna_api_deudas()
     report = build_report(debt_users)
-    send_userNotification(settings.REPORT_NOTIFICATION, USER, [report])
-    logger.info("Reporte enviado")
+    for user in USERS:
+        send_userNotification(settings.REPORT_NOTIFICATION, user, [report])
+        logger.info(f"Reporte enviado a {user['userName']}")
     for lms in available_lms:
         SNA_userList_set, SNA_userListProg = _filter_response(
             debt_users, lms.db_programs.split(",")
