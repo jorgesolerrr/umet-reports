@@ -51,7 +51,7 @@ USERS = [
     },
     {
         "userName": "Guayaquil",
-        "userEmail": "guaygua@umet.edu.ec",
+        "userEmail": "xguaygua@umet.edu.ec",
         "lmsName": "UMET",
     }
 ]
