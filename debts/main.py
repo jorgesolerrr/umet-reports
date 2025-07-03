@@ -48,11 +48,6 @@ USERS = [
         "userName": "llondono",
         "userEmail": "llondono@umet.edu.ec",
         "lmsName": "UMET",
-    },
-    {
-        "userName": "Guayaquil",
-        "userEmail": "xguaygua@umet.edu.ec",
-        "lmsName": "UMET",
     }
 ]
 
