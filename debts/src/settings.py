@@ -1,7 +1,13 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_ignore_empty=True,
+        extra="ignore",
+    )
+    
     DB_DATOSOL_USER: str
     DB_DATOSOL_PASSWORD: str
     DB_DATOSOL_SERVER: str
@@ -27,7 +33,7 @@ class Settings(BaseSettings):
     REPORT_NOTIFICATION: str
     MINUTES_TO_RUN: int = 60
     
-    class Config:
-        env_file = ".env"
+
+        
 
 settings = Settings()
