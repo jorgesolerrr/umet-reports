@@ -56,6 +56,7 @@ def parse_activities_totals(course_data: dict, params: dict, parcial_cut: int) -
         + course_data["T_wiki"]
         + course_data["T_chat"]
         + course_data["T_mapaMental"]
+        
     )
     current_cort_param = params[f"activity-cort-{parcial_cut}"]
     if total_activities >= current_cort_param:
@@ -92,13 +93,14 @@ def MakeQuantitativeReport(
     for course in rep_content:
         if course["Total_Docentes"] == 0:
             courses_withoutTeacher.append(course["course_name"])
-            continue
-        profesor = course["Docentes"].split(",")[0]
+            profesor = None
+        else:
+            profesor = course["Docentes"].split(",")[0]
         try:
             row = {
                 **category_builder.build_categories(course),
-                "PROFESOR NOMBRE": profesor.split(":")[0],
-                "PROFESOR CEDULA": profesor.split(":")[1],
+                "PROFESOR NOMBRE": profesor.split(":")[0] if profesor else "SIN PROFESOR",
+                "PROFESOR CEDULA": profesor.split(":")[1] if profesor else "SIN PROFESOR",
                 "NOMBRE": course["course_name"],
                 "OFG": int(course["OFG"]),
                 "CANT_ESTUDIANTES": course["Total_Estudiantes"],
@@ -119,6 +121,14 @@ def MakeQuantitativeReport(
                 "wiki": course["T_wiki"],
                 "chat": course["T_chat"],
                 "mapaMental": course["T_mapaMental"],
+                "CP1-ACT": course["CP1-ACT"],
+                "CP1-ACTF": course["CP1-ACTF"],
+                "CP2-ACT": course["CP2-ACT"],
+                "CP2-ACTF": course["CP2-ACTF"],
+                "CP3-ACT": course["CP3-ACT"],
+                "CP3-ACTF": course["CP3-ACTF"],
+                "CS-ACTF": course["CS-ACTF"],
+                "CF-ACTF": course["CF-ACTF"],
                 **parse_activities_totals(course, params, parcial_cut),
             }
             if row["TIPO APROBACION"] not in ["APROBACION REGULAR", "APROBACION TUTORIA"]:

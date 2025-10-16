@@ -40,7 +40,8 @@ ACTIVITY_TYPES = [
     "chat",
     "mindmap",
 ]
-
+TEMPLATE_NAME = "Indicar breve descripción del contenido a evaluar"
+TEMPLATES_CODES = {"CP1", "CP2", "CP3", "CS", "CF"}
 
 def build_initial_data(course_info: dict, course_name: str, ofg_pos: int):
     data = {
@@ -63,7 +64,7 @@ def build_initial_data(course_info: dict, course_name: str, ofg_pos: int):
             continue
         data[f"Categoria_{i+1}"] = category
 
-    data |={
+    data |= {
             # Recursos 
             "Existe_PEA": 0,
             "Existe_Guia": 0,
@@ -72,9 +73,12 @@ def build_initial_data(course_info: dict, course_name: str, ofg_pos: int):
             # Actividades interactivas
             "T_tareas": 0, "T_quiz": 0, "T_glosario": 0, "T_chat": 0, "T_taller" : 0, "T_leccion" : 0, 
             "T_foro" : 0, "T_wiki": 0, "T_mapaMental": 0, "T_label": 0, "T_video": 0,
-            "T_actividades_abiertas": 0,
+            "T_actividades_abiertas": 0, "CP1-ACT" : 0, "CP1-ACTF" : 0, "CP2-ACT" : 0, "CP2-ACTF" : 0, "CP3-ACT" : 0, "CP3-ACTF" : 0, "CS-ACTF" : 0, "CF-ACTF" : 0,
+            "T_actividades_error_codigo" : 0, 
             "NoSecciones": len(course_info["sections"])            
         }
+    # if "grade_report" in course_info:
+    #     data["grade_report"] = course_info["grade_report"]
     return data
 
 
@@ -121,14 +125,41 @@ def build_module_report(module_info: dict, course_data : dict, section_index: in
         return None
     if module_info["moduleType"] == "forum" and module_info["moduleName"] == "Avisos":
         return None
+    
+    if module_info["moduleType"] in ACTIVITY_TYPES:
+        
+        activity_start_date = datetime.date.fromtimestamp(module_info["dates"][0]["timestamp"])
+        if activity_start_date > datetime.date.today():
+            return
+        try:
+            name_splitted = module_info["moduleName"].split(":")
+            code_splitted = name_splitted[0].split("-")
+            if code_splitted[0] in TEMPLATES_CODES:
+                if "ACTF" in code_splitted[1]:
+                    course_data[f"{code_splitted[0]}-ACTF"] += 1
+                else:
+                    course_data[f"{code_splitted[0]}-ACT"] += 1
+                
+        except Exception as e:
+            course_data["T_actividades_error_codigo"] += 1
+            logger.error(f"Error building module report for {course_data['course_name']} - {module_info['moduleName']}: {e}")
+            
 
     if module_info["moduleType"] in ACTIVITY_TYPES and len(module_info["dates"]) > 1:
         
+        
+        
         activity_end_date = datetime.date.fromtimestamp(module_info["dates"][1]["timestamp"])
-        if activity_end_date > datetime.date.today():
+        activity_start_date = datetime.date.fromtimestamp(module_info["dates"][0]["timestamp"])
+        
+        if activity_start_date > datetime.date.today():
+            return
+        
+        if activity_start_date <= datetime.date.today() and activity_end_date > datetime.date.today() :
             course_data[f"S{section_index}_actividades_abiertas"] += 1
             course_data["T_actividades_abiertas"] += 1
             return
+        
 
     if module_info["moduleType"] == "url" and len(module_info["contents"]) > 0:
         fileurl = module_info["contents"][0]["cont_fileurl"]
@@ -160,6 +191,7 @@ def build_module_report(module_info: dict, course_data : dict, section_index: in
         return
 
     module_type = MODULE_TYPES[module_info["moduleType"]]
+    
     course_data[f"S{section_index}_{module_type}"] += 1
     course_data[f"T_{module_type}"] += 1
     module_indexes[module_info["moduleid"]] = {

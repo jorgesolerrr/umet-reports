@@ -65,7 +65,7 @@ def process_courses_chunk(
     Returns:
         int: Número de cursos procesados exitosamente
     """
-    moodle_client = MoodleClient(moodle_api_conn.url, moodle_api_conn.token)
+    moodle_client = MoodleClient(moodle_api_conn.url, moodle_api_conn.token, moodle_api_conn.lmsName)
     redis_client = RedisClient()
     return sum(
         int(process_course(course, period, moodle_client, redis_client))
@@ -101,7 +101,7 @@ def extract_courses_data_flow(moodle_api_conn: MoodleAPIConn, max_workers: int =
         moodle_api_conn: Configuración de conexión a Moodle
         max_workers: Número máximo de workers para procesamiento paralelo
     """
-    moodle_client = MoodleClient(moodle_api_conn.url, moodle_api_conn.token)
+    moodle_client = MoodleClient(moodle_api_conn.url, moodle_api_conn.token, moodle_api_conn.lmsName)
 
     for period in moodle_api_conn.periods:
         logger.info(f"Extrayendo información de los cursos del periodo {period}")

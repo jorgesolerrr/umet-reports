@@ -123,7 +123,7 @@ class MoodleClient:
             raise e
         
     
-    def get_course_grade_report(self, course_id: int) -> dict:
+    def get_course_grade_report(self, course_id: int) -> list[dict]:
         try:
             params = {
                 "wsfunction": "gradereport_user_get_grade_items",
@@ -134,7 +134,7 @@ class MoodleClient:
             logger.info(f"Informe de calificaciones del curso {course_id} obtenido")
             if "exception" in response.json():
                 raise Exception(f"Error con Moodle: {str(response.json())}")
-            return response.json()["usergrades"][0]["gradeitems"]
+            return response.json()["usergrades"]
         except Exception as e:
             logger.error(f"Error al obtener informe de calificaciones del curso {course_id}: {e}")
             raise e

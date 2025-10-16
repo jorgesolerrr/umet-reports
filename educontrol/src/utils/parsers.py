@@ -18,6 +18,7 @@ RESOURCES = ["url", "resource", "folder"]
 
 logger = get_logger()
 
+GRADO = "CESDEL-CARRERAS(NEW)"
 
 
 def parse_category_path(
@@ -92,7 +93,36 @@ def extract_course_info(course_id: int, moodle_client: MoodleClient) -> dict:
     data["category_id_path"], data["category_name_path"] = parse_category_path(data["categoryid"], moodle_client)
     data |= moodle_client.get_course_enrolled_users(course_id)
     data["sections"] = parse_course_sections(moodle_client.get_course_contents(course_id))
+    #if moodle_client.name == GRADO:
+        #grade_report = [] #moodle_client.get_course_grade_report(course_id)
+        #data["grade_report"] = grade_report #parse_grade_report(grade_report)
     logger.info(f"Información del curso {course_id} extraída")
+    
     return data
     
 
+def parse_grade_report(grade_report: list) -> dict:
+    grade_categories = {}
+    for grade_item in grade_report:
+        if grade_item["categoryid"]:
+            value = grade_categories.setdefault(grade_item["categoryid"], [])
+            if grade_item["itemtype"] == "mod" and not grade_item["gradeishidden"]:
+                value.append(grade_item)
+        
+    return parse_grade_categories(grade_categories)
+    
+    
+def parse_grade_categories(grade_categories: dict) -> dict:
+    final_grade_categories = {}
+    keys = grade_categories.keys()
+    for i, grade_category in enumerate(keys):
+        if i == len(keys)-1:
+            final_grade_categories["corte-final"] = len(grade_categories[grade_category])
+        else:
+            final_grade_categories[f"corte-parcial-{i+1}"] = len(grade_categories[grade_category])
+    return final_grade_categories
+        
+    
+    
+    
+    

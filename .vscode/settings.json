@@ -5,8 +5,10 @@
         "filessize",
         "fileurl",
         "fsize",
+        "gradeishidden",
         "lastmodified",
         "modname",
         "timemodified"
-    ]
+    ],
+    "liveServer.settings.port": 5501
 }
