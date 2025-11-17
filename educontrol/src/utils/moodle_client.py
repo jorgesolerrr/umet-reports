@@ -1,4 +1,4 @@
-import requests
+import httpx
 from src.utils.logging.logger_factory import get_logger
 
 logger = get_logger()
@@ -25,7 +25,7 @@ class MoodleClient:
                 "criterianame": "search",
                 "criteriavalue": criteria
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Cursos con criterio {criteria} encontrados")
             if "exception" in response.json():
@@ -44,7 +44,7 @@ class MoodleClient:
                 "field": field,
                 "value": value
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Curso con {field} {value} encontrado")
             if "exception" in response.json():
@@ -77,7 +77,7 @@ class MoodleClient:
                 "wsfunction": "core_enrol_get_enrolled_users",
                 "courseid": course_id
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Usuarios inscritos en el curso {course_id} obtenidos")
             if "exception" in response.json():
@@ -94,7 +94,7 @@ class MoodleClient:
                 "wsfunction": "core_course_get_contents",
                 "courseid": course_id
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Contenidos del curso {course_id} obtenidos")
             if "exception" in response.json():
@@ -112,7 +112,7 @@ class MoodleClient:
                 'criteria[0][value]': category_id,
                 'addsubcategories': int(include_subcategories),
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Información de la categoría {category_id} obtenida")
             if "exception" in response.json():
@@ -129,7 +129,7 @@ class MoodleClient:
                 "wsfunction": "gradereport_user_get_grade_items",
                 "courseid": course_id
             }
-            response = requests.get(self.url, params=self._base_params | params)
+            response = httpx.get(self.url, params=self._base_params | params)
             response.raise_for_status()
             logger.info(f"Informe de calificaciones del curso {course_id} obtenido")
             if "exception" in response.json():

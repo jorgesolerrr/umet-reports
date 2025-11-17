@@ -46,6 +46,11 @@ USERS = [
         "lmsName": "UMET",
     },
     {
+        "userName": "Orientador 2UIO",
+        "userEmail": "orientadoruio2@umet.edu.ec",
+        "lmsName": "UMET",
+    },
+    {
         "userName": "llondono",
         "userEmail": "llondono@umet.edu.ec",
         "lmsName": "UMET",
